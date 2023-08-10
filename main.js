@@ -21,6 +21,49 @@ var urlParams = getUrlParameters();
 urlParams.name = urlParams.name || '某某某'
 urlParams.time = urlParams.time || '9999.99.99 加入'
 urlParams.code = urlParams.code || 'H00000000'
+
+if(urlParams.lightIntensity) {
+    urlParams.lightIntensity = Number(urlParams.lightIntensity);
+} else {
+    urlParams.lightIntensity = 4
+}
+
+if(urlParams.cardMetalness) {
+    urlParams.cardMetalness = Number(urlParams.cardMetalness);
+} else {
+    urlParams.cardMetalness = 1
+}
+
+if(urlParams.cardRoughness) {
+    urlParams.cardRoughness = Number(urlParams.cardRoughness);
+} else {
+    urlParams.cardRoughness = 0.35
+}
+
+if(urlParams.cameraX) {
+    urlParams.cameraX = Number(urlParams.cameraX);
+} else {
+    urlParams.cameraX = -12
+}
+
+if(urlParams.cameraX) {
+    urlParams.cameraX = Number(urlParams.cameraX);
+} else {
+    urlParams.cameraX = -12
+}
+
+if(urlParams.cameraY) {
+    urlParams.cameraY = Number(urlParams.cameraY);
+} else {
+    urlParams.cameraY = 0
+}
+
+if(urlParams.cameraZ) {
+    urlParams.cameraZ = Number(urlParams.cameraZ);
+} else {
+    urlParams.cameraZ = 36
+}
+
 if(urlParams.fontColor) {
     urlParams.fontColor = parseInt(urlParams.fontColor, 16);
 } else {
@@ -36,13 +79,14 @@ if(urlParams.lightingColor) {
 if(urlParams.cardColor) {
     urlParams.cardColor = parseInt(urlParams.cardColor, 16);
 } else {
-    urlParams.cardColor = parseInt('0x0000ff', 16);
+    urlParams.cardColor = parseInt('0x2e0f7c', 16);
 }
 
 if(urlParams.backgroundColor) {
     urlParams.backgroundColor = parseInt(urlParams.backgroundColor, 16);
 } else {
-    urlParams.backgroundColor = parseInt('0x2e0f7c', 16);
+    urlParams.backgroundColor = parseInt('0x0000ff', 16);
+    // urlParams.backgroundColor = parseInt('0x681D9A', 16);
 }
 
 function init() {
@@ -63,9 +107,9 @@ function init() {
     container.appendChild(renderer.domElement);
 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 80);
-    camera.position.x = -15;
-    camera.position.y = 0;
-    camera.position.z = 45;
+    camera.position.x = urlParams.cameraX;
+    camera.position.y = urlParams.cameraY;
+    camera.position.z = urlParams.cameraZ;
     camera.lookAt(scene.position);
 
     let controls = new OrbitControls(camera, renderer.domElement);
@@ -77,15 +121,15 @@ function init() {
     controls.minPolarAngle = Math.PI / 4;
     controls.maxPolarAngle = Math.PI / 2 + Math.PI / 4;
 
-    var ambientLight = new THREE.AmbientLight(0xffffff, 100);
+    var ambientLight = new THREE.AmbientLight(0xffffff, urlParams.lightIntensity * 100);
     scene.add(ambientLight);
 
-    // setDirectionalLight(0, 30, 0, 1);
-    setDirectionalLight(0, 5, 100, 0.4);
-    setDirectionalLight(0, 5, -100, 0.4);
+    // setDirectionalLight(0, 30, 0, urlParams.lightIntensity * 1);
+    setDirectionalLight(0, 5, 100, urlParams.lightIntensity * 0.5);
+    setDirectionalLight(0, 5, -100, urlParams.lightIntensity * 0.5);
 
-    setDirectionalLight(100, 5, 0, 0.8);
-    setDirectionalLight(-100, 5, 0, 0.8);
+    setDirectionalLight(100, 5, 0, urlParams.lightIntensity * 0.8);
+    setDirectionalLight(-100, 5, 0, urlParams.lightIntensity * 0.8);
 
     // setDirectionalLight(100, 5, 100, 0.01);
     // setDirectionalLight(-100, 5, 100, 0.01);
@@ -200,8 +244,8 @@ function setCubeCard(width, height, depth, radius) {
 
     let material = new THREE.MeshStandardMaterial({ 
         color: urlParams.cardColor, 
-        metalness: 1, 
-        roughness: 0.35,
+        metalness: urlParams.cardMetalness, 
+        roughness: urlParams.cardRoughness,
     });
 
     // 创建网格
