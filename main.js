@@ -1,12 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-// import TWEEN from 'three/addons/libs/tween.module.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import html2canvas from 'html2canvas'
-// import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
-
-// import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-// import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { nodeFrame } from 'three/addons/renderers/webgl/nodes/WebGLNodes.js';
 
 var camera, scene, renderer, group = new THREE.Group();
 const container = document.createElement('div');
@@ -25,7 +22,7 @@ urlParams.code = urlParams.code || 'H00000000'
 if(urlParams.lightIntensity) {
     urlParams.lightIntensity = Number(urlParams.lightIntensity);
 } else {
-    urlParams.lightIntensity = 4
+    urlParams.lightIntensity = 100
 }
 
 if(urlParams.cardMetalness) {
@@ -37,7 +34,7 @@ if(urlParams.cardMetalness) {
 if(urlParams.cardRoughness) {
     urlParams.cardRoughness = Number(urlParams.cardRoughness);
 } else {
-    urlParams.cardRoughness = 0.35
+    urlParams.cardRoughness = 0.06
 }
 
 if(urlParams.cameraX) {
@@ -79,7 +76,8 @@ if(urlParams.lightingColor) {
 if(urlParams.cardColor) {
     urlParams.cardColor = parseInt(urlParams.cardColor, 16);
 } else {
-    urlParams.cardColor = parseInt('0x2e0f7c', 16);
+    urlParams.cardColor = parseInt('0x681D9A', 16);
+    // urlParams.cardColor = parseInt('0x753EBC', 16);
 }
 
 if(urlParams.backgroundColor) {
@@ -91,19 +89,32 @@ if(urlParams.backgroundColor) {
 
 function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( urlParams.backgroundColor );
-    // scene.fog = new THREE.Fog( urlParams.cardColor, 0, 60 );
+    // scene.background = new THREE.Color( urlParams.backgroundColor );
+    // scene.fog = new THREE.Fog( 0xffffff, 0, 60 );
+    
+    new RGBELoader().setPath( 'textures/' ).load( 'kloppenheim_06_puresky_1k.hdr', async ( texture ) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
 
-    group.castShadow = true;
+        scene.background = texture;
+        scene.environment = texture;
+    })
+
+    // var ambientLight = new THREE.AmbientLight(0xffffff, 1000);
+    // scene.add(ambientLight);
+
+    setLight(0, 5, 15, urlParams.lightIntensity * 1);
+    setLight(0, 5, -15, urlParams.lightIntensity * 1);
+    setLight(15, 5, 0, urlParams.lightIntensity * 1);
+    setLight(-15, 5, 0, urlParams.lightIntensity * 1);
+
     scene.add(group);
 
-    // setPlane(100, 100, urlParams.backgroundColor);
-
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-    // 启用阴影贴图
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 这种类型的阴影会有更柔和的边缘
+    renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.LinearToneMapping;
+    renderer.toneMappingExposure = .5;
+    renderer.setAnimationLoop( render );
     container.appendChild(renderer.domElement);
 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 80);
@@ -121,21 +132,6 @@ function init() {
     controls.minPolarAngle = Math.PI / 4;
     controls.maxPolarAngle = Math.PI / 2 + Math.PI / 4;
 
-    var ambientLight = new THREE.AmbientLight(0xffffff, urlParams.lightIntensity * 100);
-    scene.add(ambientLight);
-
-    // setDirectionalLight(0, 30, 0, urlParams.lightIntensity * 1);
-    setDirectionalLight(0, 5, 100, urlParams.lightIntensity * 0.5);
-    setDirectionalLight(0, 5, -100, urlParams.lightIntensity * 0.5);
-
-    setDirectionalLight(100, 5, 0, urlParams.lightIntensity * 0.8);
-    setDirectionalLight(-100, 5, 0, urlParams.lightIntensity * 0.8);
-
-    // setDirectionalLight(100, 5, 100, 0.01);
-    // setDirectionalLight(-100, 5, 100, 0.01);
-    // setDirectionalLight(100, 5, -100, 0.01);
-    // setDirectionalLight(-100, 5, -100, 0.01);
-
     let cardOptions = {
         width: 12,
         height: 19,
@@ -146,7 +142,6 @@ function init() {
     let fontDepth = 0.1;
 
     setCubeCard(cardOptions.width, cardOptions.height, cardOptions.depth, cardOptions.radius);
-    // setCubeCard2();
 
     setText('光子之城', 0, 6.8, cardOptions.depth + 0.2, 0.8, urlParams.fontColor);
     setText(urlParams.name, 0, 0, cardOptions.depth + 0.2, 1.5, urlParams.fontColor);
@@ -154,21 +149,15 @@ function init() {
     setText('光子市民', 0, -5.5, 0 - 0.2, 1, urlParams.fontColor, 0.5);
     setText(urlParams.code, 0, -7, 0 - 0.2, 0.7, urlParams.fontColor, 0.5);
 
-    // setText2('光子之城', -1.6, 6, cardOptions.depth, 0.6, fontDepth, urlParams.fontColor);
-    // setText2(urlParams.name, -1.9, 0, cardOptions.depth, 1, fontDepth, urlParams.fontColor);
-    // setText2(urlParams.time + ' 加入', -2.4, -6, cardOptions.depth, 0.5, fontDepth, urlParams.fontColor);
-    // setText2('光子市民', 1.4, -4.5, 0, 0.5, fontDepth, urlParams.fontColor, 0.5);
-    // setText2(urlParams.code, 1.5, -6, 0, 0.5, fontDepth, urlParams.fontColor, 0.5);
-
     setFlashModel(-1, 7, -0.2, 4);
 
     window.addEventListener('resize', onResize, false);
-    render();
 }
 
+window.onload = init;
+
 function render(time) {
-    requestAnimationFrame(render);
-    // TWEEN.update(time); // update the Tween animations
+    nodeFrame.update();
     renderer.render(scene, camera);
 }
 
@@ -178,31 +167,7 @@ function onResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-window.onload = init;
-
-function setCubeCard2() {
-    // 加载GLB模型
-    const loader = new GLTFLoader();
-    loader.load('model/id_card.glb', (gltf) => {
-        const model = gltf.scene;
-
-        group.add(model);
-
-        // model.position.set(x, y, z);
-        // model.scale.set(size, size, size);
-        // model.rotation.y = Math.PI;
-
-        // model.traverse(function (child) {
-        //     if (child.isMesh) {
-        //         child.material.roughness = 0.15;
-        //         child.material.color = new THREE.Color(urlParams.lightingColor);
-        //         child.material.emissive = new THREE.Color(urlParams.lightingColor);
-        //     }
-        // });
-    });
-}
-
-function setCubeCard(width, height, depth, radius) {
+async function setCubeCard(width, height, depth, radius) {
     // 创建圆角矩形路径
     function RoundedRectShape(width, height, radius) {
         let shape = new THREE.Shape();
@@ -219,28 +184,9 @@ function setCubeCard(width, height, depth, radius) {
     }
 
     // 创建几何体
-    let shape = new RoundedRectShape(width, height, radius);
-    let extrudeSettings = { depth: depth, bevelEnabled: false };
-    let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-
-
-    // manager
-    // const manager = new THREE.LoadingManager( render );
-
-    // // matcap
-    // const loaderEXR = new EXRLoader( manager );
-    // const matcap = loaderEXR.load( 'model/040full.exr' );
-
-    // // normalmap
-    // const loader = new THREE.TextureLoader( manager );
-
-    // const normalmap = loader.load( 'model/face.jpg' );
-    // // 创建材质
-    // let material = new THREE.MeshMatcapMaterial( {
-    //     color: 0xffffff, 
-    //     matcap: matcap,
-    //     normalMap: normalmap
-    // } );
+    const shape = new RoundedRectShape(width, height, radius);
+    const extrudeSettings = { depth: depth, bevelEnabled: false };
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
     let material = new THREE.MeshStandardMaterial({ 
         color: urlParams.cardColor, 
@@ -249,56 +195,15 @@ function setCubeCard(width, height, depth, radius) {
     });
 
     // 创建网格
-    let card = new THREE.Mesh(geometry, material);
-    // card.castShadow = true;
-    // card.receiveShadow = true;
-
+    const card = new THREE.Mesh(geometry, material);
     group.add(card);
 }
 
-function setDirectionalLight(x, y, z, intensity){
-    var directionalLight = new THREE.DirectionalLight(0xffffff, intensity);
-    directionalLight.position.set(x, y, z);
-    directionalLight.castShadow = true;
-
-    // 定义可见阴影的区域
-    directionalLight.shadow.camera.left = -100;
-    directionalLight.shadow.camera.right = 100;
-    directionalLight.shadow.camera.top = 100;
-    directionalLight.shadow.camera.bottom = -100;
-
-    scene.add(directionalLight);
+function setLight(x, y, z, intensity){
+    var light = new THREE.DirectionalLight(0xffffff, intensity);
+    light.position.set(x, y, z);
+    scene.add(light);
 }
-
-// function setPlane(width, height, color){
-//     // 创建平面几何体
-//     let planeGeometry = new THREE.PlaneGeometry(width, height);
-//     let planeMaterial = new THREE.MeshStandardMaterial({color: color});
-//     let plane = new THREE.Mesh(planeGeometry, planeMaterial);
-
-//     // 旋转并设置平面的位置
-//     plane.rotation.x = -0.5 * Math.PI;
-//     plane.position.y = -8.5;
-    
-//     // 平面应该接收阴影
-//     plane.receiveShadow = true;
-
-//     // 添加平面到场景中
-//     scene.add(plane);
-// }
-
-// function reverseModel() {
-//     // Define the final values for the rotation (additional 180 degrees)
-//     var finalRotationX = group.rotation.x; // + Math.PI;
-//     var finalRotationY = group.rotation.y + Math.PI;
-//     var finalRotationZ = group.rotation.z; // + Math.PI;
-
-//     // Create a new tween that modifies 'group.rotation'
-//     new TWEEN.Tween(group.rotation)
-//         .to({ x: finalRotationX, y: finalRotationY, z: finalRotationZ }, 500) // 2000 ms = 2 seconds
-//         .easing(TWEEN.Easing.Quadratic.InOut) // Use an easing function to make the animation smooth.
-//         .start(); // Start the tween immediately.
-// }
 
 // 获取url参数
 function getUrlParameters(url = window.location.href) {
@@ -323,7 +228,8 @@ function setFlashModel(x, y, z, size){
 
         model.traverse(function (child) {
             if (child.isMesh) {
-                child.material.roughness = 0.15;
+                child.material.roughness = 0.015;
+                child.material.metalness = 1;
                 child.material.color = new THREE.Color(urlParams.lightingColor);
                 child.material.emissive = new THREE.Color(urlParams.lightingColor);
             }
@@ -332,13 +238,9 @@ function setFlashModel(x, y, z, size){
 }
 
 function setText(content, x, y, z, height, color, rotationY = 0) {
-    // 1. 创建一个新的div元素
     let domDiv = document.createElement('div');
 
-    let bigger = 100
-
-    // 2. 为div设置属性和内容
-    // domDiv.className = 'text-dom-class'  // 设置类名
+    let bigger = 100 // 米单位与像素值的缩放倍数
     domDiv.style.color = '#' + color.toString(16).padStart(6, '0');  // 设置绝对定位
     domDiv.style.height = height * bigger + 'px'  // 设置绝对定位
     domDiv.style.lineHeight = height * bigger + 'px'  // 设置绝对定位
@@ -346,14 +248,10 @@ function setText(content, x, y, z, height, color, rotationY = 0) {
     domDiv.style.position = 'absolute'  // 设置绝对定位
     domDiv.style.fontWeight = 'bold' // 设置绝对定位
     domDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)' // 设置绝对定位
-
     domDiv.textContent = content;  // 设置内容
 
     document.getElementById('html2canvas').appendChild(domDiv)
     
-    // domDiv = document.getElementById("text")
-
-
     setTimeout(() => {
         let widthPlane = domDiv.getBoundingClientRect().width || 1
         let heightPlane = domDiv.getBoundingClientRect().height || 1
@@ -365,9 +263,10 @@ function setText(content, x, y, z, height, color, rotationY = 0) {
             let texture = new THREE.CanvasTexture(canvas);
 
             let planeGeometry = new THREE.PlaneGeometry(widthPlane/bigger, heightPlane/bigger); 
-            let planeMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+            let planeMaterial = new THREE.MeshStandardMaterial({ map: texture, transparent: true });
 
             let textMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+
             textMesh.position.x = x;
             textMesh.position.y = y;
             textMesh.position.z = z;
@@ -377,30 +276,3 @@ function setText(content, x, y, z, height, color, rotationY = 0) {
         })
     })
 }
-
-// function setText2(content, x, y, z, size, deep, color, rotationY = 0) {
-//     // 加载字体
-//     let fontLoader = new FontLoader();
-//     fontLoader.load('fonts/SugarCake_Regular.json', function(font) {
-//         // 创建文本几何
-//         let textGeometry = new TextGeometry(content, {
-//             font: font,
-//             size: size, // 字体大小
-//             height: deep, // 文本深度
-//             curveSegments: 7, // 曲线分段数，更高的值会增加准确度但降低性能
-//             bevelEnabled: false, // 不启用斜角
-//         });
-//         // 创建纯色文本材质
-//         let textMaterial = new THREE.MeshBasicMaterial({ color: color }); // 红色
-//         // 创建文本网格
-//         let textMesh = new THREE.Mesh(textGeometry, textMaterial);
-//         textMesh.position.x = x;
-//         textMesh.position.y = y;
-//         textMesh.position.z = z;
-
-//         textMesh.rotation.y = rotationY * 2 * Math.PI;
-
-//         // 添加到场景
-//         group.add(textMesh);
-//     });
-// }
