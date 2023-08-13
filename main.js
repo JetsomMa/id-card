@@ -14,19 +14,19 @@ document.body.appendChild(container);
 var urlParams = getUrlParameters();
 
 function init() {
+    renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+    // 设置清除颜色为白色和透明度为0（完全透明）
+    renderer.setClearColor(urlParams.backgroundColor, urlParams.backgroundAlpha);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( urlParams.backgroundColor );
     // scene.fog = new THREE.Fog( urlParams.cardColor, 0, 60 );
 
     group.castShadow = true;
     scene.add(group);
 
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
-    // 启用阴影贴图
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 这种类型的阴影会有更柔和的边缘
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    container.appendChild(renderer.domElement);
+    
 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 80);
     camera.position.x = urlParams.cameraX;
@@ -42,6 +42,8 @@ function init() {
     // 只允许水平旋转
     controls.minPolarAngle = Math.PI / 4;
     controls.maxPolarAngle = Math.PI / 2 + Math.PI / 4;
+    // 调整旋转灵敏度
+    controls.rotateSpeed = 2.5;
 
     // var ambientLight = new THREE.AmbientLight(0xffffff, urlParams.lightIntensity * 100);
     // scene.add(ambientLight);
@@ -68,8 +70,8 @@ function init() {
         // 正面
         setImage(urlParams.header, 0, 3.5, cardOptions.depth + 0.15, 10.5, 10.5, 1);
         setText(urlParams.name, -3.8, -2.5, cardOptions.depth + 0.15, 1, urlParams.fontColor);
-        setText(urlParams.description, 0, -5.5, cardOptions.depth + 0.15, 0.5, urlParams.fontColor, 0, 10.5);
-        setText(urlParams.author, -3.55, -8.5, cardOptions.depth + 0.15, 0.5, urlParams.fontColor);
+        setText(urlParams.description, 0, -5.5, cardOptions.depth + 0.15, 0.4, urlParams.fontColor, 0, 10.5);
+        setText(urlParams.author, -3.7, -8.5, cardOptions.depth + 0.15, 0.45, urlParams.fontColor);
 
         // 背面
         setText('光子之城', 0, 6.8, -0.15, 0.8, urlParams.fontColor, 0.5);
@@ -171,6 +173,7 @@ function getUrlParameters(url = window.location.href) {
         lightingColor: 0xffff00,    // 闪光颜色
         cardColor: 0x2E0F7C,        // 卡片颜色
         backgroundColor: 0x753EBC,  // 背景色
+        backgroundAlpha: 0,         // 背景透明度
 
         isHeader: false,  // 是否展示头像
         header: 'https://download.mashaojie.cn/image/header.png',  // 头像地址
@@ -263,7 +266,7 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
     if(width) {
         domDiv.style.width = width * bigger + 'px'  // 设置绝对定位
         domDiv.style.textAlign = 'left'  // 设置绝对定位
-        domDiv.style.lineHeight = height * 1.2 * bigger + 'px'  // 设置绝对定位
+        domDiv.style.lineHeight = height * 1.5 * bigger + 'px'  // 设置绝对定位
         domDiv.style.fontSize = height * bigger + 'px'  // 设置绝对定位
     } else {
         domDiv.style.height = height * bigger + 'px'  // 设置绝对定位
@@ -281,6 +284,7 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
             backgroundColor: 'rgba(0, 0, 0, 0)',
             allowTaint: false,
           }).then(canvas => {
+            domDiv.style.display = 'none';
             let texture = new THREE.CanvasTexture(canvas);
 
             let planeGeometry = new THREE.PlaneGeometry(widthPlane/bigger, heightPlane/bigger); 
@@ -333,6 +337,7 @@ function setImage(src, x, y, z, width, height, radius, rotationY = 0) {
                     backgroundColor: 'rgba(0, 0, 0, 0)',
                     allowTaint: false,
                 }).then(canvas => {
+                    domDiv.style.display = 'none';
                     let texture = new THREE.CanvasTexture(canvas);
     
                     let planeGeometry = new THREE.PlaneGeometry(widthPlane/bigger, heightPlane/bigger); 

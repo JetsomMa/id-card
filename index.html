@@ -7,8 +7,18 @@
 			body { margin: 0; }
 		</style>
 	</head>
+	<script>
+		document.addEventListener('touchstart', function(e) {
+			// 禁用长按300ms后的默认事件
+			e.preventDefault();
+		}, { passive: false });  // 注意: 使用{ passive: false }以确保preventDefault正常工作
+
+		document.addEventListener('contextmenu', function(e) {
+			e.preventDefault();
+		}, false);
+	</script>
 	<body>
 		<script type="module" src="main.js"></script>
-		<div style="margin: 100px; z-index: 0; position: fixed;  width: 100%;" id="html2canvas"></div>
+		<div style="z-index: 0; position: fixed;  width: 100%; top: -2000px;" id="html2canvas"></div>
 	</body>
 </html>
