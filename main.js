@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import TWEEN from 'three/addons/libs/tween.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import html2canvas from 'html2canvas'
@@ -25,8 +26,6 @@ function init() {
 
     group.castShadow = true;
     scene.add(group);
-
-    
 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 80);
     camera.position.x = urlParams.cameraX;
@@ -69,9 +68,9 @@ function init() {
 
         // 正面
         setImage(urlParams.header, 0, 3.5, cardOptions.depth + 0.15, 10.5, 10.5, 1);
-        setText(urlParams.name, -3.8, -2.5, cardOptions.depth + 0.15, 1, urlParams.fontColor);
+        setText(urlParams.name, 0, -2.5, cardOptions.depth + 0.15, 1, urlParams.fontColor, 0, 10.5);
         setText(urlParams.description, 0, -5.5, cardOptions.depth + 0.15, 0.4, urlParams.fontColor, 0, 10.5);
-        setText(urlParams.author, -3.7, -8.5, cardOptions.depth + 0.15, 0.45, urlParams.fontColor);
+        setText(urlParams.author, 0, -8.5, cardOptions.depth + 0.15, 0.45, urlParams.fontColor, 0, 10.5);
 
         // 背面
         setText('光子之城', 0, 6.8, -0.15, 0.8, urlParams.fontColor, 0.5);
@@ -93,14 +92,34 @@ function init() {
     
     window.addEventListener('resize', onResize, false);
     render();
+
+    setTimeout(() => { 
+        reverseModel()
+        setTimeout(() => { 
+            reverseModel()
+        }, 1000)
+    }, 0)
 }
 
 window.onload = init;
 
 function render(time) {
     requestAnimationFrame(render);
-    // TWEEN.update(time); // update the Tween animations
+    TWEEN.update(time); // update the Tween animations
     renderer.render(scene, camera);
+}
+
+function reverseModel() {
+    // Define the final values for the rotation (additional 180 degrees)
+    var finalRotationX = group.rotation.x; // + Math.PI;
+    var finalRotationY = group.rotation.y + Math.PI;
+    var finalRotationZ = group.rotation.z; // + Math.PI;
+
+    // Create a new tween that modifies 'group.rotation'
+    new TWEEN.Tween(group.rotation)
+        .to({ x: finalRotationX, y: finalRotationY, z: finalRotationZ }, 600) // 2000 ms = 2 seconds
+        .easing(TWEEN.Easing.Quadratic.InOut) // Use an easing function to make the animation smooth.
+        .start(); // Start the tween immediately.
 }
 
 function onResize() {
@@ -269,8 +288,8 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
         domDiv.style.lineHeight = height * 1.5 * bigger + 'px'  // 设置绝对定位
         domDiv.style.fontSize = height * bigger + 'px'  // 设置绝对定位
     } else {
-        domDiv.style.height = height * bigger + 'px'  // 设置绝对定位
-        domDiv.style.lineHeight = height * bigger + 'px'  // 设置绝对定位
+        domDiv.style.height = height * bigger * 1.2 + 'px'  // 设置绝对定位
+        domDiv.style.lineHeight = height * bigger * 1.2 + 'px'  // 设置绝对定位
         domDiv.style.fontSize = height * bigger + 'px'  // 设置绝对定位
     }
 
