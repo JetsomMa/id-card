@@ -272,6 +272,7 @@ function setFlashModel(x, y, z, size, rotationY = 0){
 
 
 function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
+    console.warn('content', content)
     let domDiv = document.createElement('div');
 
     let bigger = 100;  // 米单位到像素值的放大倍数
@@ -280,7 +281,7 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
     domDiv.style.position = 'absolute'  // 设置绝对定位
     domDiv.style.fontWeight = 'bold' // 设置绝对定位
     domDiv.style.backgroundColor = 'rgba(0, 0, 0, 0)' // 设置绝对定位
-    domDiv.textContent = content;  // 设置内容
+    domDiv.textContent = content.trim();  // 设置内容
 
     if(width) {
         domDiv.style.width = width * bigger + 'px'  // 设置绝对定位
@@ -291,6 +292,7 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
         domDiv.style.height = height * bigger * 1.2 + 'px'  // 设置绝对定位
         domDiv.style.lineHeight = height * bigger * 1.2 + 'px'  // 设置绝对定位
         domDiv.style.fontSize = height * bigger + 'px'  // 设置绝对定位
+        domDiv.style.whiteSpace = 'nowrap'
     }
 
     document.getElementById('html2canvas').appendChild(domDiv)
@@ -324,7 +326,7 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
 function setImage(src, x, y, z, width, height, radius, rotationY = 0) {
     const img = new Image();
     img.crossOrigin = "anonymous"; // 尝试请求 CORS 权限
-    img.src = src
+    img.src = src.trim()
     img.onload = function() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
