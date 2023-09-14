@@ -320,7 +320,7 @@ function setText(content, x, y, z, height, color, rotationY = 0, width = 0) {
 
             group.add(textMesh);
         })
-    })
+    }, 50)
 }
 
 function setImage(src, x, y, z, width, height, radius, rotationY = 0) {
