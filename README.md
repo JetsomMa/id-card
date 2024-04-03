@@ -30,3 +30,9 @@ https://www.mashaojie.cn/card-3d/?name=%E9%A9%AC%E5%B0%91%E6%9D%B0&time=2023.01.
 | cameraX           | -12              | 相机x坐标        |
 | cameraY           | 0                | 相机y坐标        |
 | cameraZ           | 36               | 相机z坐标        |
+|                   |                  |                 |
+| isHeader          | false            | 是否展示         |
+| header            | https://download.mashaojie.cn/image/header.png | 头像地址【isHeader为true时候生效】 |
+| description       | XXX              | 个人介绍【isHeader为true时候生效】         |
+| author            | 创建者            | 创建者【isHeader为true时候生效】           |
+
