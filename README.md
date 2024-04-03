@@ -9,7 +9,10 @@ npm run build
 
 
 ### 访问链接和参数说明
+#### 纯文本内容展示
 https://www.mashaojie.cn/card-3d/?name=%E9%A9%AC%E5%B0%91%E6%9D%B0&time=2023.01.01&code=H99999999&cardColor=0x2e0f7c&backgroundColor=0x0000ff
+#### 照片贴图内容展示
+https://www.mashaojie.cn/card-3d/?name=%E9%A9%AC%E5%B0%91%E6%9D%B0&time=2023.01.01&code=H99999999&cardColor=0x2e0f7c&backgroundColor=0x0000ff&isHeader=true
 
 #### 参数说明
 | 字段名            | 默认值           | 描述             |
